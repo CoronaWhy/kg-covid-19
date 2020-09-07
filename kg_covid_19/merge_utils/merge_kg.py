@@ -72,16 +72,19 @@ def load_and_merge(yaml_file: str) -> nx.MultiDiGraph:
         logging.info("Loading {}".format(key))
         if target['type'] in get_file_types():
             # loading from a file
-            transformer = get_transformer(target['type'])()
-            if target['type'] in {'tsv', 'neo4j'}:
-                if 'filters' in target:
-                    apply_filters(target, transformer)
-            for f in target['filename']:
-                transformer.parse(f, input_format='tsv')
-                transformer.graph.name = key
-            if 'operations' in target:
-                apply_operations(target, transformer)
-            transformers.append(transformer)
+            try:
+                transformer = get_transformer(target['type'])()
+                if target['type'] in {'tsv', 'neo4j'}:
+                    if 'filters' in target:
+                        apply_filters(target, transformer)
+                for f in target['filename']:
+                    transformer.parse(f, input_format='tsv')
+                    transformer.graph.name = key
+                if 'operations' in target:
+                    apply_operations(target, transformer)
+                transformers.append(transformer)
+            except:
+                logging.error("Failed loading {}".format(f))
         elif target['type'] == 'neo4j':
             transformer = NeoTransformer(None, target['uri'], target['username'],  target['password'])
             if 'filters' in target:
